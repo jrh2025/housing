@@ -9,12 +9,37 @@ from datetime import datetime
 
 # --- 基礎設定：中文字體與數字格式化 ---
 
-# 1. 字體設定
-try:
-    plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'PingFang TC', 'SimHei', 'Noto Sans TC']
+# 1. 字體設定 (*** REVISED LOGIC FOR CLOUD DEPLOYMENT ***)
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import os
+import streamlit as st
+
+# ---
+# 這是確保 Streamlit Cloud 部署成功的關鍵程式碼
+# ---
+font_path = 'NotoSansTC-Regular.ttf'
+
+# 檢查字體檔是否存在於儲存庫中
+if os.path.exists(font_path):
+    # 如果存在，則將其加入 Matplotlib 的字體管理器
+    fm.fontManager.addfont(font_path)
+    
+    # 設定 Matplotlib 的預設字體為我們剛剛載入的字體
+    # 我們從字體檔案中獲取字體的名稱
+    font_prop = fm.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()
+    
+    # 解決負號顯示問題
     plt.rcParams['axes.unicode_minus'] = False
-except Exception as e:
-    st.warning(f"中文字體設定可能失敗，圖表標籤可能顯示異常。錯誤訊息：{e}")
+    
+    # 在日誌中打印成功訊息，方便除錯
+    print(f"Font '{font_prop.get_name()}' found and set as default for matplotlib.")
+
+else:
+    # 如果在雲端找不到字體檔，這將是一個嚴重的錯誤
+    st.error(f"字體檔 '{font_path}' 不存在，請確認已將其上傳至 GitHub 儲存庫的根目錄。")
+    print(f"CRITICAL ERROR: Font file '{font_path}' not found in the repository.")
 
 # 2. 數字格式化函式
 def format_large_number(num, precision=0):
